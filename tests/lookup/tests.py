@@ -327,6 +327,13 @@ class LookupTests(TestCase):
         with self.assertRaisesMessage(TypeError, msg):
             Article.objects.all()[0:5].in_bulk([self.a1.id, self.a2.id])
 
+    def test_in_bulk_not_model_iterable(self):
+        msg = "in_bulk() cannot be used with values() or values_list()."
+        with self.assertRaisesMessage(TypeError, msg):
+            Author.objects.values().in_bulk()
+        with self.assertRaisesMessage(TypeError, msg):
+            Author.objects.values_list().in_bulk()
+
     def test_values(self):
         # values() returns a list of dictionaries instead of object instances --
         # and you can specify which fields you want to retrieve.
@@ -812,6 +819,34 @@ class LookupTests(TestCase):
         ):
             Article.objects.filter(pub_date__gobbledygook="blahblah")
 
+        with self.assertRaisesMessage(
+            FieldError,
+            "Unsupported lookup 'gt__foo' for DateTimeField or join on the field "
+            "not permitted, perhaps you meant gt or gte?",
+        ):
+            Article.objects.filter(pub_date__gt__foo="blahblah")
+
+        with self.assertRaisesMessage(
+            FieldError,
+            "Unsupported lookup 'gt__' for DateTimeField or join on the field "
+            "not permitted, perhaps you meant gt or gte?",
+        ):
+            Article.objects.filter(pub_date__gt__="blahblah")
+
+        with self.assertRaisesMessage(
+            FieldError,
+            "Unsupported lookup 'gt__lt' for DateTimeField or join on the field "
+            "not permitted, perhaps you meant gt or gte?",
+        ):
+            Article.objects.filter(pub_date__gt__lt="blahblah")
+
+        with self.assertRaisesMessage(
+            FieldError,
+            "Unsupported lookup 'gt__lt__foo' for DateTimeField or join"
+            " on the field not permitted, perhaps you meant gt or gte?",
+        ):
+            Article.objects.filter(pub_date__gt__lt__foo="blahblah")
+
     def test_unsupported_lookups_custom_lookups(self):
         slug_field = Article._meta.get_field("slug")
         msg = (
@@ -825,7 +860,7 @@ class LookupTests(TestCase):
     def test_relation_nested_lookup_error(self):
         # An invalid nested lookup on a related field raises a useful error.
         msg = (
-            "Unsupported lookup 'editor' for ForeignKey or join on the field not "
+            "Unsupported lookup 'editor__name' for ForeignKey or join on the field not "
             "permitted."
         )
         with self.assertRaisesMessage(FieldError, msg):
@@ -1059,6 +1094,10 @@ class LookupTests(TestCase):
         )
         with self.assertRaisesMessage(FieldError, msg):
             Article.objects.filter(headline__blahblah=99)
+        msg = (
+            "Unsupported lookup 'blahblah__exact' for CharField or join "
+            "on the field not permitted."
+        )
         with self.assertRaisesMessage(FieldError, msg):
             Article.objects.filter(headline__blahblah__exact=99)
         msg = (

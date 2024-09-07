@@ -197,6 +197,7 @@ class ForeignObjectRel(FieldCacheMixin):
             "ForeignObjectRel.get_joining_columns() is deprecated. Use "
             "get_joining_fields() instead.",
             RemovedInDjango60Warning,
+            stacklevel=2,
         )
         return self.field.get_reverse_joining_columns()
 
@@ -248,7 +249,8 @@ class ForeignObjectRel(FieldCacheMixin):
     def path_infos(self):
         return self.get_path_info()
 
-    def get_cache_name(self):
+    @cached_property
+    def cache_name(self):
         """
         Return the name of the cache key to use for storing an instance of the
         forward model on the reverse model.

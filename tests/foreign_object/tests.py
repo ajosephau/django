@@ -223,6 +223,13 @@ class MultiColumnFKTests(TestCase):
             [m2],
         )
 
+    def test_query_does_not_mutate(self):
+        """
+        Recompiling the same subquery doesn't mutate it.
+        """
+        queryset = Friendship.objects.filter(to_friend__in=Person.objects.all())
+        self.assertEqual(str(queryset.query), str(queryset.query))
+
     def test_select_related_foreignkey_forward_works(self):
         Membership.objects.create(
             membership_country=self.usa, person=self.bob, group=self.cia
@@ -696,24 +703,27 @@ class GetJoiningDeprecationTests(TestCase):
             "ForeignObject.get_joining_columns() is deprecated. Use "
             "get_joining_fields() instead."
         )
-        with self.assertWarnsMessage(RemovedInDjango60Warning, msg):
+        with self.assertWarnsMessage(RemovedInDjango60Warning, msg) as ctx:
             Membership.person.field.get_joining_columns()
+        self.assertEqual(ctx.filename, __file__)
 
     def test_foreign_object_get_reverse_joining_columns_warning(self):
         msg = (
             "ForeignObject.get_reverse_joining_columns() is deprecated. Use "
             "get_reverse_joining_fields() instead."
         )
-        with self.assertWarnsMessage(RemovedInDjango60Warning, msg):
+        with self.assertWarnsMessage(RemovedInDjango60Warning, msg) as ctx:
             Membership.person.field.get_reverse_joining_columns()
+        self.assertEqual(ctx.filename, __file__)
 
     def test_foreign_object_rel_get_joining_columns_warning(self):
         msg = (
             "ForeignObjectRel.get_joining_columns() is deprecated. Use "
             "get_joining_fields() instead."
         )
-        with self.assertWarnsMessage(RemovedInDjango60Warning, msg):
+        with self.assertWarnsMessage(RemovedInDjango60Warning, msg) as ctx:
             Membership.person.field.remote_field.get_joining_columns()
+        self.assertEqual(ctx.filename, __file__)
 
     def test_join_get_joining_columns_warning(self):
         class CustomForeignKey(models.ForeignKey):
