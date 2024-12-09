@@ -460,6 +460,11 @@ Miscellaneous
 
 .. _deprecated-features-5.2:
 
+:mod:`django.shortcuts`
+~~~~~~~~~~~~~~~~~~~~~~~
+
+* The new :func:`django.shortcuts.make_toast` function returns ``'toast'``.
+
 Features deprecated in 5.2
 ==========================
 
